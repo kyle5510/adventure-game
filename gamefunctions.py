@@ -1,15 +1,17 @@
 # File: gamefunctions.py
 # Author: Kyle Auclair
-# Date: March 30, 2025
+# Date: April 6, 2025
 # Description:
 # Contains all supporting functions for the adventure game, including:
 # - Input validation
 # - Item purchasing
 # - Equipping weapons
 # - Using special items
-# - Combat logic based on inventory and item types
+# - Combat logic
+# - Saving/loading game state (HP, gold, inventory, equipped items)
 
 import random
+import json
 
 def print_welcome(name):
     print(f"\nWelcome, {name}! Your adventure begins now.")
@@ -26,8 +28,8 @@ def validate_menu_input(choice, min_val, max_val):
 
 def visit_shop(gold, inventory):
     print("\nWelcome to the shop! What would you like to buy?")
-    print("1) Sword (10 gold) - Weapon")
-    print("2) Rock (5 gold) - Special Item (Defeats a monster instantly)")
+    print("1) Sword (10 gold) – Weapon")
+    print("2) Rock (5 gold) – Special Item (Defeats a monster instantly)")
     print("3) Leave shop")
 
     choice = input("Enter choice (1–3): ")
@@ -78,8 +80,8 @@ def leave_town(hp, gold, inventory, equipped_weapon):
     monster_hp = 20
     print("\nYou leave town and encounter a monster!")
 
-    # Check for a rock (special item)
-    special_item = next((item for item in inventory if item.get("type") == "special" and item.get("name") == "rock"), None)
+    # Check for special item (rock)
+    special_item = next((item for item in inventory if item.get("type") == "special"), None)
 
     if special_item:
         print("You have a special item (rock). Would you like to use it?")
@@ -93,7 +95,7 @@ def leave_town(hp, gold, inventory, equipped_weapon):
             gold += 10
             return hp, gold, inventory
 
-    # Start normal combat
+    # Normal combat begins
     while monster_hp > 0 and hp > 0:
         print(f"\nYour HP: {hp} | Monster HP: {monster_hp}")
         print("1) Attack")
@@ -102,27 +104,25 @@ def leave_town(hp, gold, inventory, equipped_weapon):
         choice = validate_menu_input(choice, 1, 2)
 
         if choice == 1:
-            # Use weapon if equipped
-            if equipped_weapon:
-                if equipped_weapon["currentDurability"] > 0:
-                    player_damage = random.randint(8, 12)
-                    equipped_weapon["currentDurability"] -= 1
-                    print(f"You hit the monster for {player_damage} damage using your {equipped_weapon['name']}!")
-                    if equipped_weapon["currentDurability"] == 0:
-                        print(f"Your {equipped_weapon['name']} has broken!")
-                else:
-                    player_damage = random.randint(4, 6)
-                    print(f"Your {equipped_weapon['name']} is broken! You attack with your fists.")
+            # Attack with weapon
+            if equipped_weapon and equipped_weapon.get("currentDurability", 0) > 0:
+                player_damage = random.randint(8, 12)
+                equipped_weapon["currentDurability"] -= 1
+                print(f"You hit the monster for {player_damage} damage using your {equipped_weapon['name']}.")
+                if equipped_weapon["currentDurability"] == 0:
+                    print(f"Your {equipped_weapon['name']} has broken!")
             else:
                 player_damage = random.randint(4, 6)
                 print(f"You hit the monster for {player_damage} damage.")
 
-            monster_damage = random.randint(2, 6)
             monster_hp -= player_damage
-            hp -= monster_damage
-            print(f"The monster hits you for {monster_damage} damage.")
+
+            if monster_hp > 0:
+                monster_damage = random.randint(2, 6)
+                hp -= monster_damage
+                print(f"The monster hits you for {monster_damage} damage.")
         else:
-            print("You ran away and return to town.")
+            print("You ran away and returned to town.")
             return hp, gold, inventory
 
     if monster_hp <= 0:
@@ -133,3 +133,24 @@ def leave_town(hp, gold, inventory, equipped_weapon):
         hp = 10
 
     return hp, gold, inventory
+
+def save_game(hp, gold, inventory, equipped_weapon, filename="savefile.json"):
+    data = {
+        "hp": hp,
+        "gold": gold,
+        "inventory": inventory,
+        "equipped_weapon": equipped_weapon
+    }
+    with open(filename, "w") as file:
+        json.dump(data, file)
+    print("Game saved successfully.")
+
+def load_game(filename="savefile.json"):
+    try:
+        with open(filename, "r") as file:
+            data = json.load(file)
+            print("Game loaded successfully.")
+            return data["hp"], data["gold"], data["inventory"], data.get("equipped_weapon")
+    except FileNotFoundError:
+        print("No save file found. Starting a new game.")
+        return 30, 20, [], None

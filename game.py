@@ -1,22 +1,32 @@
 # File: game.py
 # Author: Kyle Auclair
-# Date: March 30, 2025
+# Date: April 6, 2025
 # Description:
-# Main program for the adventure game. Imports gamefunctions.py and calls the
-# required functions with user interaction, including inventory and item usage.
+# Main program for the adventure game. Handles user interaction and calls
+# supporting functions from gamefunctions.py, including options to save/load
+# the game, manage inventory, and battle monsters.
 
 import gamefunctions
 
 def main():
-    """Main function that runs the adventure game."""
     hp = 30
     gold = 20
     inventory = []
     equipped_weapon = None
     running = True
 
-    player_name = input("What is your name, adventurer? ")
-    gamefunctions.print_welcome(player_name)
+    print("Welcome to the Adventure Game!")
+    print("1) Start New Game")
+    print("2) Load Saved Game")
+
+    start_choice = input("Enter choice: ")
+    start_choice = gamefunctions.validate_menu_input(start_choice, 1, 2)
+
+    if start_choice == 2:
+        hp, gold, inventory, equipped_weapon = gamefunctions.load_game()
+    else:
+        player_name = input("What is your name, adventurer? ")
+        gamefunctions.print_welcome(player_name)
 
     while running:
         print("\nYou are in town.")
@@ -26,7 +36,7 @@ def main():
         print("2) Sleep (Restore HP for 5 Gold)")
         print("3) Visit Shop")
         print("4) Equip Item")
-        print("5) Quit")
+        print("5) Save and Quit")
 
         choice = input("Enter choice (1–5): ")
         choice = gamefunctions.validate_menu_input(choice, 1, 5)
@@ -45,8 +55,9 @@ def main():
         elif choice == 4:
             equipped_weapon = gamefunctions.equip_item(inventory)
         elif choice == 5:
+            gamefunctions.save_game(hp, gold, inventory, equipped_weapon)
             running = False
-            print("Thanks for playing! Goodbye.")
+            print("Game saved and quitting. Goodbye!")
 
 if __name__ == "__main__":
     main()
