@@ -1,0 +1,1 @@
+{"player_pos": [8, 1], "monsters": [{"monster_type": "zombie", "name": "Undead Lurker", "color": [255, 0, 0], "position": [8, 1], "gold": 11}, {"monster_type": "slime", "name": "Gooey Blob", "color": [0, 255, 0], "position": [7, 1], "gold": 18}]}

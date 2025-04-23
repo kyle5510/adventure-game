@@ -1,47 +1,38 @@
+"""
+Author: Kyle Auclair
+Date: April 18th, 2025
+"""
 
-"""Main game loop"""
 import json
-import os
-from gamefunctions import (
-    print_welcome, print_shop_menu, purchase_item,
-    equip_item, save_game_data, load_game_data,
-    new_random_monster, handle_town_menu
-)
+from gamefunctions import main_game_loop
+from map_screen import open_map_screen
 
-SAVE_FILE = "save_data.json"
+def load_game():
+    try:
+        with open('save_data.json', 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {}
 
-def start_new_game():
-    player_name = input("What is your name, adventurer? ")
-    player_data = {
-        "name": player_name,
-        "hp": 30,
-        "gold": 20,
-        "inventory": ["rock"],
-        "equipped": None,
-        "player_pos": [0, 0]
-    }
-    print(f"Welcome, {player_name}! Your adventure begins now.")
-    return player_data
+def save_game(data):
+    with open('save_data.json', 'w') as f:
+        json.dump(data, f)
 
 def main():
-    print("Welcome to the Adventure Game!")
-    print("1) Start New Game")
-    print("2) Load Saved Game")
-    choice = input("Enter choice: ")
-
-    if choice == "1":
-        player_data = start_new_game()
-    elif choice == "2" and os.path.exists(SAVE_FILE):
-        player_data = load_game_data()
-    else:
-        print("No save found. Starting new game.")
-        player_data = start_new_game()
-
-    print_welcome()
+    data = load_game()
     while True:
-        result, player_data = handle_town_menu(player_data)
-        if result == "quit":
+        print("\nWelcome to the Adventure Game!")
+        print("1. Enter the Map")
+        print("2. Quit")
+        choice = input("Choose an option: ")
+        if choice == '1':
+            data = open_map_screen(data)
+            save_game(data)
+        elif choice == '2':
+            print("Thanks for playing!")
             break
+        else:
+            print("Invalid input. Try again.")
 
 if __name__ == "__main__":
     main()
