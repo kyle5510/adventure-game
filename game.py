@@ -1,50 +1,46 @@
-# File: game.py
-# Author: Kyle Auclair
-# Date: April 10, 2025
-# Description:
-# Main script to run the text-based adventure game. Integrates town/shop/combat
-# functions from gamefunctions.py and grid movement from map_screen.py.
 
-import gamefunctions
+"""Main game loop"""
+import json
+import os
+from gamefunctions import (
+    print_welcome, print_shop_menu, purchase_item,
+    equip_item, save_game_data, load_game_data,
+    new_random_monster, handle_town_menu
+)
+
+SAVE_FILE = "save_data.json"
+
+def start_new_game():
+    player_name = input("What is your name, adventurer? ")
+    player_data = {
+        "name": player_name,
+        "hp": 30,
+        "gold": 20,
+        "inventory": ["rock"],
+        "equipped": None,
+        "player_pos": [0, 0]
+    }
+    print(f"Welcome, {player_name}! Your adventure begins now.")
+    return player_data
 
 def main():
     print("Welcome to the Adventure Game!")
-    print("1) New Game\n2) Load Game")
+    print("1) Start New Game")
+    print("2) Load Saved Game")
+    choice = input("Enter choice: ")
 
-    choice = input("Enter choice (1–2): ")
-    choice = gamefunctions.validate_menu_input(choice, 1, 2)
-
-    if choice == 1:
-        name = input("Enter your name: ")
-        hp = 30
-        gold = 20
-        inventory = []
-        equipped_weapon = None
-        gamefunctions.print_welcome(name)
+    if choice == "1":
+        player_data = start_new_game()
+    elif choice == "2" and os.path.exists(SAVE_FILE):
+        player_data = load_game_data()
     else:
-        hp, gold, inventory, equipped_weapon = gamefunctions.load_game()
+        print("No save found. Starting new game.")
+        player_data = start_new_game()
 
+    print_welcome()
     while True:
-        print("\nWhat would you like to do?")
-        print("1) Leave Town")
-        print("2) Visit Shop")
-        print("3) Equip Item")
-        print("4) Save Game")
-        print("5) Quit")
-
-        choice = input("Enter choice (1–5): ")
-        choice = gamefunctions.validate_menu_input(choice, 1, 5)
-
-        if choice == 1:
-            hp, gold, inventory = gamefunctions.leave_town(hp, gold, inventory, equipped_weapon)
-        elif choice == 2:
-            gold, inventory = gamefunctions.visit_shop(gold, inventory)
-        elif choice == 3:
-            equipped_weapon = gamefunctions.equip_item(inventory)
-        elif choice == 4:
-            gamefunctions.save_game(hp, gold, inventory, equipped_weapon)
-        elif choice == 5:
-            print("Thanks for playing!")
+        result, player_data = handle_town_menu(player_data)
+        if result == "quit":
             break
 
 if __name__ == "__main__":
