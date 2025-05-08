@@ -1,38 +1,44 @@
-"""
-Author: Kyle Auclair
-Date: April 18th, 2025
-"""
 
-import json
-from gamefunctions import main_game_loop
-from map_screen import open_map_screen
-
-def load_game():
-    try:
-        with open('save_data.json', 'r') as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return {}
-
-def save_game(data):
-    with open('save_data.json', 'w') as f:
-        json.dump(data, f)
+from gamefunctions import *
+from map_screen import launch_map
+from wanderingMonster import initialize_monsters
 
 def main():
-    data = load_game()
+    print_welcome()
+    load_game()
+    monsters = initialize_monsters()
     while True:
-        print("\nWelcome to the Adventure Game!")
-        print("1. Enter the Map")
-        print("2. Quit")
-        choice = input("Choose an option: ")
-        if choice == '1':
-            data = open_map_screen(data)
-            save_game(data)
-        elif choice == '2':
-            print("Thanks for playing!")
+        print("\n--- Main Menu ---")
+        print("1. Enter Map")
+        print("2. Shop")
+        print("3. Equip Item")
+        print("4. Use Item")
+        print("5. Sleep")
+        print("6. Save Game")
+        print("7. Quit")
+
+        choice = input("Choose an action: ")
+        if choice == "1":
+            launch_map(monsters)
+        elif choice == "2":
+            print_shop_menu()
+            item = input("Enter item name to purchase: ").lower()
+            purchase_item(item)
+        elif choice == "3":
+            item = input("Enter item to equip: ").lower()
+            equip_item(item)
+        elif choice == "4":
+            item = input("Enter item to use: ").lower()
+            use_item(item)
+        elif choice == "5":
+            sleep()
+        elif choice == "6":
+            save_game()
+        elif choice == "7":
+            print("Goodbye!")
             break
         else:
-            print("Invalid input. Try again.")
+            print("Invalid choice.")
 
 if __name__ == "__main__":
     main()
